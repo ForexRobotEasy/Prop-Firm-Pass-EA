@@ -1,0 +1,78 @@
+
+// Prop Firm Pass EA
+// Developer's Site: forexroboteasy.com
+// Development: Forex Robot Easy Team
+
+// Include necessary libraries
+#include <Trade\Trade.mqh>
+
+// Define trading parameters
+input double lotSize = 0.01;  // lot size for each trade
+
+// Define breakout strategy parameters
+input int breakoutPeriod = 20;  // number of periods for breakout calculation
+input double breakoutThreshold = 0.001;  // minimum breakout percentage
+
+// Define risk management parameters
+input double maxDrawdown = 0.05;  // maximum allowable drawdown percentage
+
+// Define the Prop Firm Pass EA class
+class PropFirmPassEA
+{
+   private:
+      CTrade trade;  // trade object for executing trades
+
+   public:
+      // Constructor
+      PropFirmPassEA()
+      {
+         trade.SetExpertMagicNumber(123456);  // set expert magic number
+      }
+
+      // Entry function for the EA
+      void OnTick()
+      {
+         double currentPrice = SymbolInfoDouble(_Symbol, SYMBOL_BID);  // get current price
+
+         double previousPrice = iClose(_Symbol, 0, 1);  // get previous price
+         double breakoutPercentage = (currentPrice - previousPrice) / previousPrice;  // calculate breakout percentage
+
+         if (breakoutPercentage >= breakoutThreshold)
+         {
+            // Open a buy trade
+            trade.Buy(lotSize);
+         }
+         else if (breakoutPercentage <= -breakoutThreshold)
+         {
+            // Open a sell trade
+            trade.Sell(lotSize);
+         }
+      }
+};
+
+// Create an instance of the Prop Firm Pass EA class
+PropFirmPassEA propFirmPassEA;
+
+// Initialize the EA
+int OnInit()
+{
+   return(INIT_SUCCEEDED);
+}
+
+// Start the EA
+void OnStart()
+{
+   // Run the EA on every tick
+   while (!IsStopped())
+   {
+      propFirmPassEA.OnTick();
+      Sleep(1000);  // pause for 1 second
+   }
+}
+
+// Stop the EA
+void OnDeinit(const int reason)
+{
+   // Close all open trades
+   trade.CloseAll();
+}
